@@ -1,27 +1,32 @@
 package main
 
 import (
-	"context"
-	"ride-sharing/services/trip-service/internal/domain"
+	"log"
+	"net/http"
+	h "ride-sharing/services/trip-service/internal/infrastructure/http"
 	"ride-sharing/services/trip-service/internal/infrastructure/repository"
 	"ride-sharing/services/trip-service/internal/service"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func main() {
+	log.Println("Starting Trip Service")
 
-	ctx := context.Background()
+	mux := http.NewServeMux()
 	inmemRepo := repository.NewInMemoryTripRepository()
-	service := service.NewService(inmemRepo)
+	svc := service.NewService(inmemRepo)
 
-	fare := &domain.RideFareModel{
-		ID:                primitive.NewObjectID(),
-		UserID:            "user123",
-		PackageSlug:       "standard",
-		TotalPriceInCents: 1500,
+	httpHandler := &h.HttpHandler{
+		Service: svc,
 	}
 
-	service.CreateTrip(ctx, fare)
-	println("Trip service is running with in-memory repository:", service)
+	mux.HandleFunc("POST /preview", httpHandler.HandleTripPreview)
+
+	server := &http.Server{
+		Addr:    ":8083",
+		Handler: mux,
+	}
+
+	if err := server.ListenAndServe(); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }

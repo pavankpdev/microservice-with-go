@@ -8,9 +8,9 @@ import (
 
 type TripModel struct {
 	ID       primitive.ObjectID `json:"id"`
-	UserID   string             `json:"user_id"`
+	UserID   string             `json:"userID"`
 	Status   string             `json:"status"`
-	RideFare *RideFareModel      `json:"ride_fare"`
+	RideFare *RideFareModel     `json:"rideFare"`
 }
 
 type TripRepository interface {
